@@ -21,10 +21,6 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 
 ### Model 2: Architektura Deconvolution ("ConvTranspose2d")
 * **Architektura:** Wprowadzenie warstw transponowanej konwolucji.
-* **Strategia treningu:** Złożony proces wieloetapowy:
-    1.  **Warmup:** Wstępne uczenie samego generatora na funkcji straty Masked-L1.
-    2.  **Trening Adaptacyjny:** Dynamiczna pętla treningowa ("adaptacyjny" trening), która monitoruje siłę Dyskryminatora i Generatora, "boostując" (dodatkowo trenując) stronę, która zaczyna przegrywać.
-    3.  **Fine-tuning:** Precyzyjne manualne dobieranie współczynnika uczenia (Learning Rate) oraz wagi straty Masked-L1 w celu wyjścia z minimów lokalnych.
 * **Dataset:** Zmodyfikowany zbiór "łatwy" (większe obiekty, wyeliminowanie pustych obrazów).
 * **Wynik (Średni L1 Loss):** 0.042313
 * Checkpoint Model 1: checkpoints_3/270.pth  -> Epoka 270
@@ -32,7 +28,6 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 
 ### Model 3: Architektura hybrydowa ("Upsample + Conv")
 * **Architektura:** Ulepszona wersja, głębsza niż Model 2. Zastąpiono dekonwolucję podejściem "Upsample + Convolution". Pozwala to na gładsze generowanie obrazu i eliminuje artefakty typowe dla Modelu 2.
-* **Strategia treningu:** Podobna do Modelu 2, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
 * **Dataset:** Zbiór "łatwy" (duże obiekty).
 * **Wynik (Średni L1 Loss):** 0.037179 (Najlepszy wynik precyzji geometrycznej).
 * checkpoint: checkpoints_3/270.pth -> epoka 270
@@ -40,6 +35,14 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 ## 3. Przebieg eksperymentów 
 
 ### A. Trening modelu 1
+
+* **Strategia treningu:** Złożony proces wieloetapowy:
+    1.  **Warmup:** Wstępne uczenie samego generatora na funkcji straty Masked-L1.
+    2.  **Trening Adaptacyjny:** Dynamiczna pętla treningowa ("adaptacyjny" trening), która monitoruje siłę Dyskryminatora i Generatora, "boostując" (dodatkowo trenując) stronę, która zaczyna przegrywać.
+    3.  **Fine-tuning:** Precyzyjne manualne dobieranie współczynnika uczenia (Learning Rate) oraz wagi straty Masked-L1 w celu wyjścia z minimów lokalnych.
+
+* **Strategia treningu:** Podobna do Modelu 2, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
+
 Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według wykresu (rys. 1) trening był niestabilny, bo strata generatora i dyskryminator rosła. Ogólnie dyskryminator rozpoznawał fałszywe obrazy tylko, że w kolejnych epokach wycodziło mu to gorzej.
 
 | Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
@@ -53,7 +56,9 @@ Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według w
 
 ### B. Trening modelu 2
 
-Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które zostały wytrenowane na parametrach treningowych pokazanych w tabeli 2. Według wykresów (rys. 2-6) 
+* **Strategia treningu:** Podobna do modelu 1.
+
+Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów. Zostały one wytrenowane na parametrach treningowych pokazanych w tabeli 2. Według wykresów (rys. 2-6) 
 
 | Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -80,6 +85,9 @@ Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które został
 ![plot_model_5](/img/plot_5.svg)
     *Rys. 6: Wykresy procesu uczenia dla wersji 5.*
 
+### B. Trening modelu 3
+
+* **Strategia treningu:** Podobna do modelu 1, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
 
 ## 4. Wyzwania
 
