@@ -17,15 +17,7 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 * Model nie generował wystarczająco dobrych obrazów
 
 ### Model 1: Architektura Deconvolution ("ConvTranspose2d")
-Jest on podobny do modelu 1, który używał dyskryminatora z mniejszą liczbę kanałów w warstwach konwolucyjnych 2D i liniowych oraz mniejszą ilością tych warstw w dyskryminatorze. Natomiast ten model nie zawiera za to w architekurze warstwy normalizującej na dane o 1 wymiarze. Prametry treningowe tego modelu zostały zaprezntowane w tabeli 1.  
-
-| Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
-| **model 1** | 0.0002 | 0.00002 | 16 | 400 | 30|
-
-*Tabela 1: Parametry treningowe na modelu 2*
-
-![plot_model_6](/img/plot_6.svg)
-    *Rys. 1: Wykresy procesu uczenia modelu 2.*
+* **Architektura i charakterystyka:** Jest on podobny do modelu 1, który używał dyskryminatora z mniejszą liczbę kanałów w warstwach konwolucyjnych 2D i liniowych oraz mniejszą ilością tych warstw w dyskryminatorze. Natomiast ten model za to nie zawiera w architekurze warstwy normalizującej na dane o 1 wymiarze.
 
 ### Model 2: Architektura Deconvolution ("ConvTranspose2d")
 * **Architektura:** Wprowadzenie warstw transponowanej konwolucji.
@@ -37,7 +29,31 @@ Jest on podobny do modelu 1, który używał dyskryminatora z mniejszą liczbę 
 * **Wynik (Średni L1 Loss):** 0.042313
 * Checkpoint Model 1: checkpoints_3/270.pth  -> Epoka 270
 
-Prócz tej wersji modelu są jeszcze 5 innych, które zostały wytrenowane na innych parametrach treningowych (tabela 1.):
+
+### Model 3: Architektura hybrydowa ("Upsample + Conv")
+* **Architektura:** Ulepszona wersja, głębsza niż Model 2. Zastąpiono dekonwolucję podejściem "Upsample + Convolution". Pozwala to na gładsze generowanie obrazu i eliminuje artefakty typowe dla Modelu 2.
+* **Strategia treningu:** Podobna do Modelu 2, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
+* **Dataset:** Zbiór "łatwy" (duże obiekty).
+* **Wynik (Średni L1 Loss):** 0.037179 (Najlepszy wynik precyzji geometrycznej).
+* checkpoint: checkpoints_3/270.pth -> epoka 270
+
+## 3. Przebieg eksperymentów 
+
+### A. Trening modelu 1
+Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według wykresu (rys. 1) trening był niestabilny, bo strata generatora i dyskryminator rosła. Ogólnie dyskryminator rozpoznawał fałszywe obrazy tylko, że w kolejnych epokach wycodziło mu to gorzej.
+
+| Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **model 1** | 0.0002 | 0.00002 | 16 | 400 | 30|
+
+*Tabela 1: Parametry treningowe na modelu 2*
+
+![plot_model_6](/img/plot_6.svg)
+    *Rys. 1: Wykresy procesu uczenia modelu 2.*
+
+### B. Trening modelu 2
+
+Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które zostały wytrenowane na parametrach treningowych pokazanych w tabeli 2. Według wykresów (rys. 2-6) 
 
 | Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -65,14 +81,7 @@ Prócz tej wersji modelu są jeszcze 5 innych, które zostały wytrenowane na in
     *Rys. 6: Wykresy procesu uczenia dla wersji 5.*
 
 
-### Model 3: Architektura hybrydowa ("Upsample + Conv")
-* **Architektura:** Ulepszona wersja, głębsza niż Model 2. Zastąpiono dekonwolucję podejściem "Upsample + Convolution". Pozwala to na gładsze generowanie obrazu i eliminuje artefakty typowe dla Modelu 2.
-* **Strategia treningu:** Podobna do Modelu 2, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
-* **Dataset:** Zbiór "łatwy" (duże obiekty).
-* **Wynik (Średni L1 Loss):** 0.037179 (Najlepszy wynik precyzji geometrycznej).
-* checkpoint: checkpoints_3/270.pth -> epoka 270
-
-## 3. Przebieg eksperymentów i wyzwania
+## 4. Wyzwania
 
 W trakcie pracy zidentyfikowano trzy główne obszary problemowe, które wymagały niestandardowych rozwiązań.
 
@@ -99,8 +108,6 @@ W parametrach przekazywanych do modelu zastosowano odpowiednie normalizacje, ora
 ## 4. Wyniki
 
 ### Metryki
-
-Wyniki
 
 Poniższe tabele prezentują wyniki dla zbioru testowego (600 obrazów).
 
