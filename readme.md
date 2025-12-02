@@ -16,20 +16,21 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 * **Dataset:** Zbiór domyślny (małe obiekty, parametry z zadania - z jedynie lekkim ograniczeniem na częstość występowania całościowo czarnych obrazków).
 * Model nie generował wystarczająco dobrych obrazów
 
-### Model 1: Architektura Deconvolution ("ConvTranspose2d")
-* **Architektura i charakterystyka:** Jest on podobny do modelu 1, który używał dyskryminatora z mniejszą liczbę kanałów w warstwach konwolucyjnych 2D i liniowych oraz mniejszą ilością tych warstw w dyskryminatorze. Natomiast ten model za to nie zawiera w architekurze warstwy normalizującej na dane o 1 wymiarze.
-* **Dataset:** Zbiór zgodny z wtycznymi projektu.
+### Model 1: Wersja modelu 2 bez warstwy normalizującej 1D
+* **Architektura i charakterystyka:** Jest on podobny do modelu 2, który używał dyskryminatora z mniejszą liczbę kanałów w warstwach konwolucyjnych 2D i liniowych oraz mniejszą ilością tych warstw w dyskryminatorze. Natomiast ten model za to nie zawiera w architekurze warstwy normalizującej na dane o 1 wymiarze.
+* **Dataset:** Zbiór według parametrów domyślnych kodu otrzymanego wraz z opisem projektu.
+* Checkpoint Model 1: checkpoints_v6/gen_epoch_400.pth  -> epoka 400
 
 ### Model 2: Architektura Deconvolution ("ConvTranspose2d")
 * **Architektura:** Wprowadzenie warstw transponowanej konwolucji.
 * **Dataset:** Zmodyfikowany zbiór "łatwy" (większe obiekty, wyeliminowanie pustych obrazów).
-* Checkpoint Model 1: checkpoints_3/270.pth  -> Epoka 270
+* checkpoint: checkpoints_3/gen_epoch_289.pth -> epoka 289
 
 
 ### Model 3: Architektura hybrydowa ("Upsample + Conv")
 * **Architektura:** Ulepszona wersja, głębsza niż Model 2. Zastąpiono dekonwolucję podejściem "Upsample + Convolution". Pozwala to na gładsze generowanie obrazu i eliminuje artefakty typowe dla Modelu 2.
 * **Dataset:** Zbiór "łatwy" (duże obiekty).
-* checkpoint: checkpoints_3/270.pth -> epoka 270
+* checkpoint: checkpoints_3/gen_epoch_270.pth -> epoka 270
 
 ## 3. Przebieg eksperymentów 
 
@@ -57,7 +58,7 @@ Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według w
 * **Strategia treningu:** Podobna do modelu 1.
 * **Wynik (Średni L1 Loss):** 0.042313
 
-Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które różnią się jedynie parametrami treningowymi pokazanymi w tabeli 2 oraz tym, że były trenowane na zbiorze zgodnym według treści zadania.
+Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które różnią się jedynie parametrami treningowymi pokazanymi w tabeli 2 oraz tym, że były trenowane na zbiorze zgodnym według domślnych wartości kodu udostępnionego wraz z treścią projektu.
 Według wykresów (rys. 2-6) dyskryminator ogólnie odróżniał fałszywe obrazy w tym, że dla wersji innej niż 1 lub 3 wychodził mu to gorzej. Strata dla generatora spadała głównie jedynie na początku, gdy strata dyskryminatora fluktuowała przeważnie. Jednak od 4 wersji zaczęła ona rosnąć.
 
 | Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
@@ -129,56 +130,56 @@ Poniższe tabele prezentują wyniki dla zbioru testowego (600 obrazów).
 
 *Tabela 3: Wyniki metryk z modeli 1, 2 i 3*
 
-W modelach widocznych w tabeli 3 zastosowano dwie różne architektury, dwa sposoby treningu oraz 2 datasety - zgodny (model 1) i uproszczony (modele 2 i 3) w stosunku do zadanych parametrów z opisu projektu.  
+W modelach widocznych w tabeli 3 zastosowano dwie różne architektury, dwa sposoby treningu oraz 2 datasety - na domyślnych parametrach generatora do renderowania sceny Phonga otrzymanego wraz z treścią zadania (model 1) i uproszczony (modele 2 i 3) w stosunku do zadanych parametrów z opisu projektu.  
 
-Z niej widać wyraźny skok jakościowy między modelem 1 a 2, oraz finalne doszlifowanie wyników w modelu 3 (ulepszona architektura i od początku lepsze podejście podczas treningu), szczególnie w metryce strukturalnej (SSIM) i odległości Hausdorffa.
+Z niej widać wyraźny skok jakościowy między modelem 1 a 2, oraz finalne doszlifowanie wyników w modelu 3 (ulepszona architektura i od początku lepsze podejście podczas treningu), szczególnie w metryce strukturalnej (SSIM) i odległości Hausdorffa. Mimo innych właściwości datasetu dla modelu 1, które były otrzymane za pomocą wcześniej wspomnianego generatora, który tworzy prostszy zbiór na podstawie przeanalizowanego kodu, nie osiągnał porównywalnych wyników z modelami 2 i 3. 
 
 ## 5. Wizualizacje
 
-Poniżej zaprezentowano wyniki wizualne wygenerowane z modeli 1, 2 i 3.
+Poniżej zaprezentowano wyniki wizualne wygenerowane z modeli 1, 2 i 3. Na podstawie nich model 1 generuje obrazy słabej jakości. Położenie czasem jest prawidłowe, a czasem inne. Kolory główne (bazowe) kuli są prawidłowe, ale nienaturalne ze względu na występowanie artefaktów. Natomiast model 2 i 3 stworzą kule w tym samym miejscu jak na obrazach referencyjnych, które są mniej rozpikselowane. Nie mają na sobie one w większosci dziwnych wróżniających przebarwień. Niektóre obrazy wynikowe z modelu 3, biorąc pod uwagę rys. 15 mogą wyjść trochę żywe.
 
 ### Model 1
 
 ![wiz_model_1](/img/m_1.png)
 
-*Rys. 7: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
+*Rys. 7: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 1.*
 
 ![wiz_model_1_2](/img/m_1_2.png)
 
-*Rys. 8: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
+*Rys. 8: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 1.*
 
 ![wiz_model_1_3](/img/m_1_3.png)
 
-*Rys. 9: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
+*Rys. 9: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 1.*
 
 ### Model 2
 
 ![wiz_model_2](/img/m_2.png)
 
-*Rys. 10: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
+*Rys. 10: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 2.*
 
 ![wiz_model_2_2](/img/m_2_2.png)
 
-*Rys. 11: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
+*Rys. 11: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 2.*
 
 ![wiz_model_2_3](/img/m_2_3.png)
 
-*Rys. 12: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
+*Rys. 12: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 2.*
 
 
 ### Model 3
 
 ![wiz_model_3](/img/m_3.png)
 
-*Rys. 13: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 3.*
+*Rys. 13: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 3.*
 
 ![wiz_model_3](/img/m_3_2.png)
 
-*Rys. 14: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 3.*
+*Rys. 14: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 3.*
 
 ![wiz_model_3](/img/m_3_3.png)
 
-*Rys. 15: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 3.*
+*Rys. 15: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 3.*
 
 ## 5. Podsumowanie i wnioski
 
@@ -187,3 +188,4 @@ Na podstawie przeprowadzonych eksperymentów wyciągnięto następujące wnioski
 1.  Architektura hybrydowa ("Upsample + Conv") okazała się najlepsza. Jest bardziej stabilna w treningu, jest w stanie generować gładsze obrazy, unikając artefaktów geometrycznych.
 2.  Kluczem do sukcesu nie była sama sieć (duża różnica w architekturze modelu i modelu 2, brak różnic architektury modelu 1 i modelu 2), ale sposób jej trenowania. Odpowiedni fine-tuning i dynamiczne balansowanie sił między Generatorem a Dyskryminatorem pozwoliło wyjść z impasu, w którym Dyskryminator blokował rozwój Generatora.
 3. Model 3 osiąga najlepsze wyniki zarówno w metrykach geometrycznych (Hausdorff), jak i percepcyjnych (LPIPS/SSIM). Oznacza to, że generuje obrazy nie tylko poprawne matematycznie (kształt), ale i najbardziej przekonujące dla ludzkiego oka (cieniowanie, faktura).  
+4. Wynikiem lepszych wartości w metrykach jest w dużej mierze zasługą lepszej architektury i procesu treningowemu modeli 2 i 3 niż cech zależnych od datasetu.
