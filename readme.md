@@ -1,86 +1,153 @@
-# Model 1
-"upsample"
+# Projekt 3
 
-![plot_model_1](/img/plot.svg)
+## 1. Raport: Generowanie Obrazów (Neural Renderer) - Phong shading*
 
-*Rys. 1: Wykresy z .*
+Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obiektów 3D (odtworzenie Phong Shading) na podstawie zadanych parametrów. Poniżej przedstawiono ewolucję trzech modeli, napotkane problemy oraz finalne wyniki.
 
-# Model 2
-- model: model_2.py -> "prosta" architektura (v2) "ConvTranspose2d"
-- checkpoint: checkpoints_2/289.pth -> dlugi trening, warmup generatora, potem "statyczny trening", dotrenowanie dyskryminatora, trening "adaptacyjny" (boost D i G zależnie od potrzeb -> statystyk D), fine-tuning poprzez dobór LR (w celu wyjścia z minimum lokalnego zwiększenie potem zmniejszenie) oraz przez dobór współczynnika straty masked-L1.
-- dataset -> dataset "łatwy" - z wiekszymi obiektami + wszystkie mają obiekt
-- Średni L1 Loss: 0.042313
+[Folder z wynikami z modelu 1 i notatnikami](https://drive.google.com/drive/folders/1wM5_MUKcisrMO29oBGaAhzGDBwIgoPq7)
 
-# Model 3
-- model: model_3.py -> "lepsza" architektura (v3) "Upsample + Conv", głębsze niż model 2
-- checkpoint: checkpoints_3/270.pth  -> podobnie jak model 2 (z przewagą treningu "adaptacyjnego") - obecne problemy z dyskryminatorem który był za mocny, rozwiazano modyfikacja LR G
-- dataset -> dataset "łatwy" - z wiekszymi obiektami + wszystkie mają obiekt
-- Średni L1 Loss: 0.037179
+[Folder z wynikami z pozostałych modeli i kodem w plikach w formacie PY](https://drive.google.com/drive/u/0/folders/15SehDe59HaoV9Bu6N-18cYAcZ1BwxG56)
 
-# Eksperymenty
+## 2. Przegląd Modeli
 
-## Dyskryminator i trening: 
+### Model 0: Podejście Bazowe ("Upsample")
+* **Architektura:** Prosta sieć oparta na operacji Upsample (skalowanie).
+* **Charakterystyka:** Model bazowy, który posłużył jako punkt odniesienia. Miał trudności z generowaniem ostrych detali i stabilnością treningu.
+* **Dataset:** Zbiór domyślny (małe obiekty, parametry z zadania - z jedynie lekkim ograniczeniem na częstość występowania całościowo czarnych obrazków).
+* Model nie generował wystarczająco dobrych obrazów
 
-Sprawdzono dwie architektury (pierwsza zdecydowanie za mocna) i druga - prostsza.
+### Model 1: Architektura Deconvolution ("ConvTranspose2d")
+* **Architektura:** Wprowadzenie warstw transponowanej konwolucji.
+* **Strategia treningu:** Złożony proces wieloetapowy:
+    1.  **Warmup:** Wstępne uczenie samego generatora na funkcji straty Masked-L1.
+    2.  **Trening Adaptacyjny:** Dynamiczna pętla treningowa ("adaptacyjny" trening), która monitoruje siłę Dyskryminatora i Generatora, "boostując" (dodatkowo trenując) stronę, która zaczyna przegrywać.
+    3.  **Fine-tuning:** Precyzyjne manualne dobieranie współczynnika uczenia (Learning Rate) oraz wagi straty Masked-L1 w celu wyjścia z minimów lokalnych.
+* **Dataset:** Zmodyfikowany zbiór "łatwy" (większe obiekty, wyeliminowanie pustych obrazów).
+* **Wynik (Średni L1 Loss):** 0.042313
+* Checkpoint Model 1: checkpoints_3/270.pth  -> Epoka 270 
 
-Problemem w modelu 1 oprócz "trudniejszego" datasetu, był też ciężki dyskryminator który był za mocny w porównaniu do generatora.
+### Model 2: Architektura Deconvolution ("ConvTranspose2d")
+Został wybrany 1 z 6 wersji modelu 1, które różniły się od siebie głównie parametrami treningowymi, a wersja 6 została wytypowana na model 2 ze względu na to, że reszta osiągała podobne wartości z obliczonych metryk. 
 
-Pojawiającym się później problemem z dyskryminatorem było to że uczył się na pamięć obrazków treningowych zamiast generalizować, overfitting.
+![plot_model_1](/img/plot_1.svg)
+    *Rys. 1: Wykresy procesu uczenia dla checkpointu w wersji 1 na kandydata modelu 2.*
 
-Skutecznymi pomysłami było dodanie dropoutu oraz szumu w trakcie treningu gdy D był za mocny. Zależnie od potrzeb ręcznie modyfikowano dropout i szum.
+![plot_model_2](/img/plot_2.svg)
+    *Rys. 2: Wykresy procesu uczenia dla checkpointu w wersji 2 na kandydata modelu 2.*
 
-Jednoczesnie problemem był za słabo uczący się dyskryminator (przy modelu 2) - gdy był za słaby (niskie stałe LR) to Generator bez problemu go oszukiwał ale nie szedł w stronę realizmu.
+![plot_model_3](/img/plot_3.svg)
+    *Rys. 3: Wykresy procesu uczenia dla checkpointu w wersji 3 na kandydata modelu 2.*
 
-Jak miał wyższe LR to był za mocny, generator nie dawał rady, w praktyce nie dostawał gradientu/kierunku bo wszystko co zrobił było oceniane przez D jako całkowity fałsz.
-Stąd pomysł na automatyczny trening "adaptacyjny" na podstawie Accuracy Dyskryminator (dla Real i False oraz średniej) - jeśli D był za mocny (lub leniwy, wszystko prawda) to nie trenowano go, i przez kilka batchy trenowano G aż D osłabł (lub max trenowań na batchu).
-Jak D był za słaby (niskie accuracy)(lub był haterem - wszystko fałsz) to go nawet kilka razy dotrenowywano na batchu aż się poprawią statystyki, potem na tym samym batchu trenowano G i porównywano, jak trzeba było to wzmacniano G.
+![plot_model_4](/img/plot_4.svg)
+    *Rys. 4: Wykresy procesu uczenia dla checkpointu w wersji 4 na kandydata modelu 2.*
 
-Dało to znacznie lepsze wyniki w połączeniu z ustawieniem odpowiednim LR G i D oraz parametrami L1 masked.
+![plot_model_5](/img/plot_5.svg)
+    *Rys. 5: Wykresy procesu uczenia dla checkpointu w wersji 5 na kandydata modelu 2.*
 
-## Dataset:
-
-Uznano, że zaproponowane parametry są zbyt trudne (obiekt to kilka pikseli), obrazek w większości pusty, duża część obrazków nie miała wcale obiektu (tu od razu na początku dano ifa i lekką zmianę parametrów żeby ograniczyć puste obrazki do max 10%).
-Obiekty stanowiły po 5% lub mniej obrazka.
-
-Do modelu 2 zmieniono podejście - korekcja datasetu na łatwiejszy - ograniczono parametry do takich aby na każdym był obiekt (nieliczne w większości były puste bo obiekt miał tylko kilka pikseli na obrazku) o wielkości stanowiącej 20% obrazka.
-Następnie pomysł był taki, aby po uzyskaniu dobrego modelu zrobić fine-tuning na trudniejszym datasetcie - z oryginalnymi parametrami.
-
-## Funkcje strat:
-
-Na poczatku stosowano L1 (w warmupie G), L1*wsp_1 + GAN.
-
-Jeszcze w modelu 1 zmieniono L1 na L1_masked -> nakładamy maskę na obiekt, błędne piksele na obiekcie stanowią wsp_2 razy większą karę.
-Ustalono, że podejście było słuszne, rezultaty się znacznie poprawiły na oryginalnym datasetcie obiekt stanowił z 5% obrazka lub mniej, więc maska była potrzebna aby G kładł większy nacisk na poprawne rysowanie obiektu.
-
-Eksperymentowano też z dodaniem straty VGG ale trening był za długi, a rezultaty niezadowalające.
+![plot_model_6](/img/plot_6.svg)
+    *Rys. 6: Wykresy procesu uczenia dla checkpointu w wersji 6 - wybrany na model 2.*
 
 
-# Wizualizacja
+### Model 3: Architektura hybrydowa ("Upsample + Conv")
+* **Architektura:** Ulepszona wersja, głębsza niż Model 2. Zastąpiono dekonwolucję podejściem "Upsample + Convolution". Pozwala to na gładsze generowanie obrazu i eliminuje artefakty typowe dla Modelu 2.
+* **Strategia treningu:** Podobna do Modelu 2, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
+* **Dataset:** Zbiór "łatwy" (duże obiekty).
+* **Wynik (Średni L1 Loss):** 0.037179 (Najlepszy wynik precyzji geometrycznej).
+* checkpoint: checkpoints_3/270.pth -> epoka 270
 
-# Wyniki
+## 3. Przebieg eksperymentów i wyzwania
 
-## Metryki
+W trakcie pracy zidentyfikowano trzy główne obszary problemowe, które wymagały niestandardowych rozwiązań.
 
-Otrzymane wartości metryk zostały obliczone na podstawie zbioru testowego o wielkości 600 obrazów. 
+### A. Walka z Dyskryminatorem (Balans G i D)
+Największym wyzwaniem w treningu GAN było utrzymanie równowagi między Generatorem a Dyskryminatorem.
 
-| Metoda       | FLIP | LPIPS       | SSIM       | Hausdorff      |
-|------------|------|-------------|-------------|-------------|
-|  neural renderer | 0.347   | 0.243    |  0.104|  102.528|
+* **Wyzwanie 1: "Zbyt silny krytyk":** W początkowych fazach Dyskryminator uczył się za szybko, odrzucając wszystkie próby Generatora jako fałsz (Accuracy bliskie 100%). Generator nie otrzymywał wtedy użytecznego gradientu (kierunku poprawy), co prowadziło do stagnacji. Rozwiązano to poprzez uproszczenie architektury Dyskryminatora (na nadal w całości nie wystarczyło stąd rozwiązanie nr 2).
+* **Wyzwanie 2: Overfitting:** Dyskryminator zamiast uczyć się cech obiektu i generalizować, zapamiętywał obrazy treningowe na pamięć.
+* **Zastosowane Rozwiązania:**
+    * **Trening Adaptacyjny:** Zaimplementowano pętlę logiczną monitorującą skuteczność (Accuracy średnie, dla fake i dla real obrazów). Jeśli Dyskryminator dominował -> wstrzymywano jego trening i trenowano tylko Generator (nawet dwukrotnie na tym samym batchu, aby wzmocnić generator w stosunku do Dyksryminatora). Oraz odwrotnie gdy Dyskryminator był za słaby (praktycznie się nie zdarzało w modelu 3, w przeciwnieństwie do modelu 2).
+    * **Regularyzacja:** Wprowadzono **Dropout** (losowe wyłączanie neuronów) oraz **Noise Injection** (szum na wejściu), aby utrudnić Dyskryminatorowi zapamiętywanie, zamiast generalizowania.
 
-*Tabela 1: Metryki dla modelu 1.*
+### B. Dataset i trudność zadania
+W parametrach przekazywanych do modelu zastosowano odpowiednie normalizacje, oraz relatywne wartości parametrów dotyczących położenia - kamera-obiekt-światło.
 
-| Metoda       | FLIP | LPIPS       | SSIM       | Hausdorff      |
-|------------|------|-------------|-------------|-------------|
-|  neural renderer | 0.062   | 0.162    |  0.637|  55.869|
+* **Wyzwanie:** Pierwotny zestaw danych (zbiór "domyślny" - na podanych parametrach z opisu projektu + dodatkowym warunkom logicznym i lekkiemu ograniczeniu pozycji tak aby było mniej w całości czarnych obrazów) zawierał bardzo małe obiekty (zajmujące <5% obrazu) lub puste obrazy. Sieć miała tendencję do generowania czystego czarnego tła, ponieważ statystycznie dawało to mały błąd globalny, ignorując trudny w rysowaniu obiekt.
+* **Rozwiązanie:** Stworzono dataset na innych bardziej ograniczonych parametrach, gdzie obiekty stanowią min. 20% powierzchni (oraz prawie bez pustych obrazów). Pozwoliło to sieci najpierw nauczyć się generować poprawne kształty, co w założeniu miało stanowić bazę do późniejszego fine-tuningu na trudniejszych danych (najpierw trenowanie na zbiorze łatwym potem na domyślnym). Ze względu na brak czasu i dalej nie do końca zadowalające wyniki (które dawałyby perspektywy na poradzenie sobie z pierwotnym datasetem) niedokonano fine-tuningu.
 
-*Tabela 2: Metryki dla modelu 2.*
+### C. Funkcje straty
+* **L1:** Początkowo stosowano zwykłą stratę L1, ale to nie wymuszało precyzji na obiekcie (tym bardziej na domyślnym zbiorze).
+* **Masked L1:** Wprowadzono maskowanie – błąd na pikselach należących do obiektu był karany znacznie surowiej (wysoki współczynnik wagi) niż błąd na tle. Zmusiło to generator do "skupienia się" na obiekcie.
+* **VGG:** Eksperymenty ze stratą percepcyjną (VGG Loss) wydłużyły znacznie czas treningu, nie przynosząc zauważalnej poprawy jakości wizualnej w tym zadaniu. Odrzucono tę funkcję.
 
-| Metoda       | FLIP | LPIPS       | SSIM       | Hausdorff      |
-|------------|------|-------------|-------------|-------------|
-|  neural renderer | 0.057  | 0.156    | 0.728 | 43.411 |
 
-*Tabela 3: Metryki dla modelu 3.*
+## 4. Wyniki
 
-# Wnioski
+### Metryki
 
-Na podstawie przeprowadzonych eksperymentów najlepsze efekty osiąga model 3. Pod względem prepecji widzenia daje on rezultaty zbliżone do referencyjnego obrazu, a pod względem struktury osiąga również dobre wyniki.  
+Wyniki
+
+Poniższe tabele prezentują wyniki dla zbioru testowego (600 obrazów).
+
+
+| Metoda | FLIP ($\downarrow$) | LPIPS ($\downarrow$) | SSIM ($\uparrow$) | Hausdorff ($\downarrow$) |
+| :--- | :--- | :--- | :--- | :--- |
+| **neural_renderer_1** | 0.347 | 0.243 | 0.104 | 102.528 |
+| **neural_renderer_2** | 0.062 | 0.162 | 0.637 | 55.869 |
+| **neural_renderer_3** | **0.057** | **0.156** | **0.728** | **43.411** |
+
+*Tabela zbiorcza: Widać wyraźny skok jakościowy między modelem 1 a 2, oraz finalne doszlifowanie wyników w modelu 3 (ulepszona architektura i od początku lepsze podejście podczas treningu), szczególnie w metryce strukturalnej (SSIM) i odległości Hausdorffa.*
+
+W modelach widocznych w tabeli zbiorczej zastosowano dwie różne architektury, dwa sposoby treningu oraz uproszczony dataset w stosunku do zadanych parametrów z opisu projektu. Poniżej opisano napotkane problemy i  przebieg procesu ich rozwiązywania.   
+
+## 5. Wizualizacje
+
+### Model 1
+
+![wiz_model_2](/img/m_2.png)
+
+*Rys. 7: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
+
+![wiz_model_2_2](/img/m_2_2.png)
+
+*Rys. 8: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
+
+![wiz_model_2_3](/img/m_2_3.png)
+
+*Rys. 9: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
+
+### Model 2
+
+![wiz_model_1](/img/m_1.png)
+
+*Rys. 10: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
+
+![wiz_model_1_2](/img/m_1_2.png)
+
+*Rys. 11: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
+
+![wiz_model_1_3](/img/m_1_3.png)
+
+*Rys. 12: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
+
+
+### Model 3
+
+![wiz_model_3](/img/m_3.png)
+
+*Rys. 13: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 3.*
+
+![wiz_model_3](/img/m_3_2.png)
+
+*Rys. 14: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 3.*
+
+![wiz_model_3](/img/m_3_3.png)
+
+*Rys. 15: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 3.*
+
+## 5. Podsumowanie i wnioski
+
+Na podstawie przeprowadzonych eksperymentów wyciągnięto następujące wnioski:
+
+1.  Architektura hybrydowa ("Upsample + Conv") okazała się najlepsza. Jest bardziej stabilna w treningu, jest w stanie generować gładsze obrazy, unikając artefaktów geometrycznych.
+2.  Kluczem do sukcesu nie była sama sieć (duża różnica w architekturze modelu i modelu 2, brak różnic architektury modelu 1 i modelu 2), ale sposób jej trenowania. Odpowiedni fine-tuning i dynamiczne balansowanie sił między Generatorem a Dyskryminatorem pozwoliło wyjść z impasu, w którym Dyskryminator blokował rozwój Generatora.
+3. Model 3 osiąga najlepsze wyniki zarówno w metrykach geometrycznych (Hausdorff), jak i percepcyjnych (LPIPS/SSIM). Oznacza to, że generuje obrazy nie tylko poprawne matematycznie (kształt), ale i najbardziej przekonujące dla ludzkiego oka (cieniowanie, faktura).  
