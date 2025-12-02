@@ -18,6 +18,7 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 
 ### Model 1: Architektura Deconvolution ("ConvTranspose2d")
 * **Architektura i charakterystyka:** Jest on podobny do modelu 1, który używał dyskryminatora z mniejszą liczbę kanałów w warstwach konwolucyjnych 2D i liniowych oraz mniejszą ilością tych warstw w dyskryminatorze. Natomiast ten model za to nie zawiera w architekurze warstwy normalizującej na dane o 1 wymiarze.
+* **Dataset:** Zbiór domyślny.
 
 ### Model 2: Architektura Deconvolution ("ConvTranspose2d")
 * **Architektura:** Wprowadzenie warstw transponowanej konwolucji.
@@ -45,9 +46,9 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 
 Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według wykresu (rys. 1) trening był niestabilny, bo strata generatora i dyskryminator rosła. Ogólnie dyskryminator rozpoznawał fałszywe obrazy tylko, że w kolejnych epokach wycodziło mu to gorzej.
 
-| Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **model 1** | 0.0002 | 0.00002 | 16 | 400 | 30|
+ | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
+ | :--- | :--- | :--- | :--- | :--- |
+ | 0.0002 | 0.00002 | 16 | 400 | 30|
 
 *Tabela 1: Parametry treningowe na modelu 2*
 
@@ -58,7 +59,8 @@ Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według w
 
 * **Strategia treningu:** Podobna do modelu 1.
 
-Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów. Zostały one wytrenowane na parametrach treningowych pokazanych w tabeli 2. Według wykresów (rys. 2-6) 
+Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które różnią się jedynie parametrami treningowymi pokazanymi w tabeli 2 oraz tym, że były trenowane na domyślnym.
+Według wykresów (rys. 2-6) dyskryminator ogólnie odróżniał fałszywe obrazy w tym, że dla wersji innej niż 1 lub 3 wychodził mu to gorzej. Strata dla generatora spadała głównie jedynie na początku, gdy strata dyskryminatora fluktuowała przeważnie. Jednak od 4 wersji zaczęła ona rosnąć.
 
 | Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
 | :--- | :--- | :--- | :--- | :--- | :--- |
