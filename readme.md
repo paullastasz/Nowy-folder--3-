@@ -4,9 +4,9 @@
 
 Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obiektów 3D (odtworzenie Phong Shading) na podstawie zadanych parametrów. Poniżej przedstawiono ewolucję trzech modeli, napotkane problemy oraz finalne wyniki.
 
-[Folder z wynikami z modelu 1 i notatnikami](https://drive.google.com/drive/folders/1wM5_MUKcisrMO29oBGaAhzGDBwIgoPq7)
+[Link do folderu z wynikami z modelu 1 i notatnikami](https://drive.google.com/drive/folders/1wM5_MUKcisrMO29oBGaAhzGDBwIgoPq7)
 
-[Folder z wynikami z pozostałych modeli i kodem w plikach w formacie PY](https://drive.google.com/drive/u/0/folders/15SehDe59HaoV9Bu6N-18cYAcZ1BwxG56)
+[Link do folderu z wynikami z pozostałych modeli i kodem w plikach w formacie PY](https://drive.google.com/drive/u/0/folders/15SehDe59HaoV9Bu6N-18cYAcZ1BwxG56)
 
 ## 2. Przegląd Modeli
 
@@ -17,6 +17,17 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 * Model nie generował wystarczająco dobrych obrazów
 
 ### Model 1: Architektura Deconvolution ("ConvTranspose2d")
+Jest on podobny do modelu 1, który używał dyskryminatora z mniejszą liczbę kanałów w warstwach konwolucyjnych 2D i liniowych oraz mniejszą ilością tych warstw w dyskryminatorze. Natomiast ten model nie zawiera za to w architekurze warstwy normalizującej na dane o 1 wymiarze. Prametry treningowe tego modelu zostały zaprezntowane w tabeli 1.  
+
+| Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
+| **model 1** | 0.0002 | 0.00002 | 16 | 400 | 30|
+
+*Tabela 1: Parametry treningowe na modelu 2*
+
+![plot_model_6](/img/plot_6.svg)
+    *Rys. 1: Wykresy procesu uczenia modelu 2.*
+
+### Model 2: Architektura Deconvolution ("ConvTranspose2d")
 * **Architektura:** Wprowadzenie warstw transponowanej konwolucji.
 * **Strategia treningu:** Złożony proces wieloetapowy:
     1.  **Warmup:** Wstępne uczenie samego generatora na funkcji straty Masked-L1.
@@ -24,28 +35,34 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
     3.  **Fine-tuning:** Precyzyjne manualne dobieranie współczynnika uczenia (Learning Rate) oraz wagi straty Masked-L1 w celu wyjścia z minimów lokalnych.
 * **Dataset:** Zmodyfikowany zbiór "łatwy" (większe obiekty, wyeliminowanie pustych obrazów).
 * **Wynik (Średni L1 Loss):** 0.042313
-* Checkpoint Model 1: checkpoints_3/270.pth  -> Epoka 270 
+* Checkpoint Model 1: checkpoints_3/270.pth  -> Epoka 270
 
-### Model 2: Architektura Deconvolution ("ConvTranspose2d")
-Został wybrany 1 z 6 wersji modelu 1, które różniły się od siebie głównie parametrami treningowymi, a wersja 6 została wytypowana na model 2 ze względu na to, że reszta osiągała podobne wartości z obliczonych metryk. 
+Prócz tej wersji modelu są jeszcze 5 innych, które zostały wytrenowane na innych parametrach treningowych (tabela 1.):
+
+| Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **1** | 0.0002 | 0.00002 | 64 | 100 | 30|
+| **2** | 0.00002 | 0.000002 | 16 | 100 | 10|
+| **3** | 0.00002 | 0.00002 | 16 | 300 | 25|
+| **4** | 0.0002 | 0.00002 | 16 | 250 | 30|
+| **5** | 0.0001 | 0.00001 | 16 | 400 | 35|
+
+*Tabela 2: Parametry treningowe na modelu 1*
 
 ![plot_model_1](/img/plot_1.svg)
-    *Rys. 1: Wykresy procesu uczenia dla checkpointu w wersji 1 na kandydata modelu 2.*
+    *Rys. 2: Wykresy procesu uczenia dla wersji 1.*
 
 ![plot_model_2](/img/plot_2.svg)
-    *Rys. 2: Wykresy procesu uczenia dla checkpointu w wersji 2 na kandydata modelu 2.*
+    *Rys. 3: Wykresy procesu uczenia dla wersji 2.*
 
 ![plot_model_3](/img/plot_3.svg)
-    *Rys. 3: Wykresy procesu uczenia dla checkpointu w wersji 3 na kandydata modelu 2.*
+    *Rys. 4: Wykresy procesu uczenia dla wersji 3.*
 
 ![plot_model_4](/img/plot_4.svg)
-    *Rys. 4: Wykresy procesu uczenia dla checkpointu w wersji 4 na kandydata modelu 2.*
+    *Rys. 5: Wykresy procesu uczenia dla wersji 4.*
 
 ![plot_model_5](/img/plot_5.svg)
-    *Rys. 5: Wykresy procesu uczenia dla checkpointu w wersji 5 na kandydata modelu 2.*
-
-![plot_model_6](/img/plot_6.svg)
-    *Rys. 6: Wykresy procesu uczenia dla checkpointu w wersji 6 - wybrany na model 2.*
+    *Rys. 6: Wykresy procesu uczenia dla wersji 5.*
 
 
 ### Model 3: Architektura hybrydowa ("Upsample + Conv")
@@ -79,7 +96,6 @@ W parametrach przekazywanych do modelu zastosowano odpowiednie normalizacje, ora
 * **Masked L1:** Wprowadzono maskowanie – błąd na pikselach należących do obiektu był karany znacznie surowiej (wysoki współczynnik wagi) niż błąd na tle. Zmusiło to generator do "skupienia się" na obiekcie.
 * **VGG:** Eksperymenty ze stratą percepcyjną (VGG Loss) wydłużyły znacznie czas treningu, nie przynosząc zauważalnej poprawy jakości wizualnej w tym zadaniu. Odrzucono tę funkcję.
 
-
 ## 4. Wyniki
 
 ### Metryki
@@ -95,37 +111,41 @@ Poniższe tabele prezentują wyniki dla zbioru testowego (600 obrazów).
 | **neural_renderer_2** | 0.062 | 0.162 | 0.637 | 55.869 |
 | **neural_renderer_3** | **0.057** | **0.156** | **0.728** | **43.411** |
 
-*Tabela zbiorcza: Widać wyraźny skok jakościowy między modelem 1 a 2, oraz finalne doszlifowanie wyników w modelu 3 (ulepszona architektura i od początku lepsze podejście podczas treningu), szczególnie w metryce strukturalnej (SSIM) i odległości Hausdorffa.*
+*Tabela 2: Wyniki metryk z modeli 1, 2 i 3*
 
 W modelach widocznych w tabeli zbiorczej zastosowano dwie różne architektury, dwa sposoby treningu oraz uproszczony dataset w stosunku do zadanych parametrów z opisu projektu. Poniżej opisano napotkane problemy i  przebieg procesu ich rozwiązywania.   
 
+Widać wyraźny skok jakościowy między modelem 1 a 2, oraz finalne doszlifowanie wyników w modelu 3 (ulepszona architektura i od początku lepsze podejście podczas treningu), szczególnie w metryce strukturalnej (SSIM) i odległości Hausdorffa
+
 ## 5. Wizualizacje
+
+Poniżej zaprezentowano wyniki wizualne wygenerowane z modeli 1, 2 i 3.
 
 ### Model 1
 
-![wiz_model_2](/img/m_2.png)
+![wiz_model_1](/img/m_1.png)
 
 *Rys. 7: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
 
-![wiz_model_2_2](/img/m_2_2.png)
+![wiz_model_1_2](/img/m_1_2.png)
 
 *Rys. 8: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
 
-![wiz_model_2_3](/img/m_2_3.png)
+![wiz_model_1_3](/img/m_1_3.png)
 
 *Rys. 9: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 1.*
 
 ### Model 2
 
-![wiz_model_1](/img/m_1.png)
+![wiz_model_2](/img/m_2.png)
 
 *Rys. 10: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
 
-![wiz_model_1_2](/img/m_1_2.png)
+![wiz_model_2_2](/img/m_2_2.png)
 
 *Rys. 11: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
 
-![wiz_model_1_3](/img/m_1_3.png)
+![wiz_model_2_3](/img/m_2_3.png)
 
 *Rys. 12: Po lewej obraz refrencyjny, a po prawej obraz wynikowy z modelu 2.*
 
