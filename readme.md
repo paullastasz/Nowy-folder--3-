@@ -18,19 +18,17 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 
 ### Model 1: Architektura Deconvolution ("ConvTranspose2d")
 * **Architektura i charakterystyka:** Jest on podobny do modelu 1, który używał dyskryminatora z mniejszą liczbę kanałów w warstwach konwolucyjnych 2D i liniowych oraz mniejszą ilością tych warstw w dyskryminatorze. Natomiast ten model za to nie zawiera w architekurze warstwy normalizującej na dane o 1 wymiarze.
-* **Dataset:** Zbiór domyślny.
+* **Dataset:** Zbiór zgodny z wtycznymi projektu.
 
 ### Model 2: Architektura Deconvolution ("ConvTranspose2d")
 * **Architektura:** Wprowadzenie warstw transponowanej konwolucji.
 * **Dataset:** Zmodyfikowany zbiór "łatwy" (większe obiekty, wyeliminowanie pustych obrazów).
-* **Wynik (Średni L1 Loss):** 0.042313
 * Checkpoint Model 1: checkpoints_3/270.pth  -> Epoka 270
 
 
 ### Model 3: Architektura hybrydowa ("Upsample + Conv")
 * **Architektura:** Ulepszona wersja, głębsza niż Model 2. Zastąpiono dekonwolucję podejściem "Upsample + Convolution". Pozwala to na gładsze generowanie obrazu i eliminuje artefakty typowe dla Modelu 2.
 * **Dataset:** Zbiór "łatwy" (duże obiekty).
-* **Wynik (Średni L1 Loss):** 0.037179 (Najlepszy wynik precyzji geometrycznej).
 * checkpoint: checkpoints_3/270.pth -> epoka 270
 
 ## 3. Przebieg eksperymentów 
@@ -41,8 +39,7 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
     1.  **Warmup:** Wstępne uczenie samego generatora na funkcji straty Masked-L1.
     2.  **Trening Adaptacyjny:** Dynamiczna pętla treningowa ("adaptacyjny" trening), która monitoruje siłę Dyskryminatora i Generatora, "boostując" (dodatkowo trenując) stronę, która zaczyna przegrywać.
     3.  **Fine-tuning:** Precyzyjne manualne dobieranie współczynnika uczenia (Learning Rate) oraz wagi straty Masked-L1 w celu wyjścia z minimów lokalnych.
-
-* **Strategia treningu:** Podobna do Modelu 2, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
+* **Wynik najleszy L1 Loss (raw_l1):** około 0.1
 
 Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według wykresu (rys. 1) trening był niestabilny, bo strata generatora i dyskryminator rosła. Ogólnie dyskryminator rozpoznawał fałszywe obrazy tylko, że w kolejnych epokach wycodziło mu to gorzej.
 
@@ -58,8 +55,9 @@ Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według w
 ### B. Trening modelu 2
 
 * **Strategia treningu:** Podobna do modelu 1.
+* **Wynik (Średni L1 Loss):** 0.042313
 
-Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które różnią się jedynie parametrami treningowymi pokazanymi w tabeli 2 oraz tym, że były trenowane na domyślnym.
+Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które różnią się jedynie parametrami treningowymi pokazanymi w tabeli 2 oraz tym, że były trenowane na zbiorze zgodnym według treści zadania.
 Według wykresów (rys. 2-6) dyskryminator ogólnie odróżniał fałszywe obrazy w tym, że dla wersji innej niż 1 lub 3 wychodził mu to gorzej. Strata dla generatora spadała głównie jedynie na początku, gdy strata dyskryminatora fluktuowała przeważnie. Jednak od 4 wersji zaczęła ona rosnąć.
 
 | Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
@@ -90,6 +88,7 @@ Według wykresów (rys. 2-6) dyskryminator ogólnie odróżniał fałszywe obraz
 ### B. Trening modelu 3
 
 * **Strategia treningu:** Podobna do modelu 1, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
+* **Wynik (Średni L1 Loss):** 0.037179 (Najlepszy wynik precyzji geometrycznej).
 
 ## 4. Wyzwania
 
@@ -128,11 +127,11 @@ Poniższe tabele prezentują wyniki dla zbioru testowego (600 obrazów).
 | **neural_renderer_2** | 0.062 | 0.162 | 0.637 | 55.869 |
 | **neural_renderer_3** | **0.057** | **0.156** | **0.728** | **43.411** |
 
-*Tabela 2: Wyniki metryk z modeli 1, 2 i 3*
+*Tabela 3: Wyniki metryk z modeli 1, 2 i 3*
 
-W modelach widocznych w tabeli zbiorczej zastosowano dwie różne architektury, dwa sposoby treningu oraz uproszczony dataset w stosunku do zadanych parametrów z opisu projektu. Poniżej opisano napotkane problemy i  przebieg procesu ich rozwiązywania.   
+W modelach widocznych w tabeli 3 zastosowano dwie różne architektury, dwa sposoby treningu oraz 2 datasety - zgodny (model 1) i uproszczony (modele 2 i 3) w stosunku do zadanych parametrów z opisu projektu.  
 
-Widać wyraźny skok jakościowy między modelem 1 a 2, oraz finalne doszlifowanie wyników w modelu 3 (ulepszona architektura i od początku lepsze podejście podczas treningu), szczególnie w metryce strukturalnej (SSIM) i odległości Hausdorffa
+Z niej widać wyraźny skok jakościowy między modelem 1 a 2, oraz finalne doszlifowanie wyników w modelu 3 (ulepszona architektura i od początku lepsze podejście podczas treningu), szczególnie w metryce strukturalnej (SSIM) i odległości Hausdorffa.
 
 ## 5. Wizualizacje
 
