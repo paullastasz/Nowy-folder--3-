@@ -58,7 +58,7 @@ Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według w
 * **Strategia treningu:** Podobna do modelu 1.
 * **Wynik (Średni L1 Loss):** 0.042313
 
-Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, które różnią się jedynie parametrami treningowymi pokazanymi w tabeli 2 oraz tym, że były trenowane na zbiorze zgodnym według domślnych wartości kodu udostępnionego wraz z treścią projektu.
+Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, którzy różnili się jedynie pod względem parametrów treningowych pokazanych w tabeli 2 oraz tym, że byli oni trenowani na zbiorze zgodnym według domyślnych wartości kodu udostępnionego wraz z treścią projektu.
 Według wykresów (rys. 2-6) dyskryminator ogólnie odróżniał fałszywe obrazy w tym, że dla wersji innej niż 1 lub 3 wychodził mu to gorzej. Strata dla generatora spadała głównie jedynie na początku, gdy strata dyskryminatora fluktuowała przeważnie. Jednak od 4 wersji zaczęła ona rosnąć.
 
 | Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
