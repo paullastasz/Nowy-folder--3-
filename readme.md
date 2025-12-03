@@ -42,7 +42,7 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
     3.  **Fine-tuning:** Precyzyjne manualne dobieranie współczynnika uczenia (Learning Rate) oraz wagi straty Masked-L1 w celu wyjścia z minimów lokalnych.
 * **Wynik najleszy L1 Loss (raw_l1):** około 0.1
 
-Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według wykresu (rys. 1) trening był niestabilny, bo strata generatora i dyskryminator rosła. Ogólnie dyskryminator rozpoznawał fałszywe obrazy tylko, że w kolejnych epokach wycodziło mu to gorzej.
+Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według wykresu (rys. 1) trening był niestabilny, bo strata generatora i dyskryminator rosła. Ogólnie dyskryminator rozpoznawał fałszywe obrazy tylko, że w kolejnych epokach wychodziło mu to gorzej.
 
  | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
  | :--- | :--- | :--- | :--- | :--- |
@@ -59,7 +59,7 @@ Parametry treningowe tego modelu zostały zaprezentowane w tabeli 1, a według w
 * **Wynik (Średni L1 Loss):** 0.042313
 
 Oprócz najlepszej wersji na model 2 było jeszcze 5 kandydatów, którzy różnili się jedynie pod względem parametrów treningowych pokazanych w tabeli 2 oraz tym, że byli oni trenowani na zbiorze zgodnym według domyślnych wartości kodu udostępnionego wraz z treścią projektu.
-Według wykresów (rys. 2-6) dyskryminator ogólnie odróżniał fałszywe obrazy w tym, że dla wersji innej niż 1 lub 3 wychodził mu to gorzej. Strata dla generatora spadała głównie jedynie na początku, gdy strata dyskryminatora fluktuowała przeważnie. Jednak od 4 wersji zaczęła ona rosnąć.
+Według wykresów (rys. 2-6) dyskryminator ogólnie odróżniał fałszywe obrazy w tym, że dla wersji innej niż 1 lub 3 wychodziło mu to gorzej. Strata dla generatora spadała głównie jedynie na początku, gdy strata dyskryminatora fluktuowała przeważnie. Jednak od 4 wersji zaczęła ona rosnąć.
 
 | Wersja | LEARNING_RATE_GEN | LEARNING_RATE_DISC | BATCH_SIZE | Liczba epok | L1_LAMBDA |
 | :--- | :--- | :--- | :--- | :--- | :--- |
