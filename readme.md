@@ -86,7 +86,7 @@ Według wykresów (rys. 2-6) dyskryminator ogólnie odróżniał fałszywe obraz
 ![plot_model_5](/img/plot_5.svg)
     *Rys. 6: Wykresy procesu uczenia dla wersji 5.*
 
-### B. Trening modelu 3
+### C. Trening modelu 3
 
 * **Strategia treningu:** Podobna do modelu 1, z silnym naciskiem na trening adaptacyjny. Rozwiązano tu kluczowy problem zbyt silnego dyskryminatora poprzez modyfikację tempa uczenia (LR) generatora względem dyskryminatora.
 * **Wynik (Średni L1 Loss):** 0.037179 (Najlepszy wynik precyzji geometrycznej).
@@ -115,7 +115,7 @@ W parametrach przekazywanych do modelu zastosowano odpowiednie normalizacje, ora
 * **Masked L1:** Wprowadzono maskowanie – błąd na pikselach należących do obiektu był karany znacznie surowiej (wysoki współczynnik wagi) niż błąd na tle. Zmusiło to generator do "skupienia się" na obiekcie.
 * **VGG:** Eksperymenty ze stratą percepcyjną (VGG Loss) wydłużyły znacznie czas treningu, nie przynosząc zauważalnej poprawy jakości wizualnej w tym zadaniu. Odrzucono tę funkcję.
 
-## 4. Wyniki
+## 5. Wyniki
 
 ### Metryki
 
@@ -134,11 +134,11 @@ W modelach widocznych w tabeli 3 zastosowano dwie różne architektury, dwa spos
 
 Z niej widać wyraźny skok jakościowy między modelem 1 a 2, oraz finalne doszlifowanie wyników w modelu 3 (ulepszona architektura i od początku lepsze podejście podczas treningu), szczególnie w metryce strukturalnej (SSIM) i odległości Hausdorffa. Mimo innych właściwości datasetu dla modelu 1, które były otrzymane za pomocą wcześniej wspomnianego generatora, który tworzy prostszy zbiór na podstawie przeanalizowanego kodu, nie osiągnał porównywalnych wyników z modelami 2 i 3. 
 
-## 5. Wizualizacje
+### Wizualizacje
 
 Poniżej zaprezentowano wyniki wizualne wygenerowane z modeli 1, 2 i 3. Na podstawie nich model 1 generuje obrazy słabej jakości. Położenie czasem jest prawidłowe, a czasem inne. Kolory główne (bazowe) kuli są prawidłowe, ale nienaturalne ze względu na występowanie artefaktów. Natomiast model 2 i 3 stworzą kule w tym samym miejscu jak na obrazach referencyjnych, które są mniej rozpikselowane. Nie mają na sobie one w większosci dziwnych wróżniających przebarwień. Niektóre obrazy wynikowe z modelu 3, biorąc pod uwagę rys. 15 mogą wyjść trochę żywe.
 
-### Model 1
+#### Model 1
 
 ![wiz_model_1](/img/m_1.png)
 
@@ -152,7 +152,7 @@ Poniżej zaprezentowano wyniki wizualne wygenerowane z modeli 1, 2 i 3. Na podst
 
 *Rys. 9: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 1.*
 
-### Model 2
+#### Model 2
 
 ![wiz_model_2](/img/m_2.png)
 
@@ -167,7 +167,7 @@ Poniżej zaprezentowano wyniki wizualne wygenerowane z modeli 1, 2 i 3. Na podst
 *Rys. 12: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 2.*
 
 
-### Model 3
+#### Model 3
 
 ![wiz_model_3](/img/m_3.png)
 
@@ -181,7 +181,7 @@ Poniżej zaprezentowano wyniki wizualne wygenerowane z modeli 1, 2 i 3. Na podst
 
 *Rys. 15: Po lewej obraz referencyjny, a po prawej obraz wynikowy z modelu 3.*
 
-## 5. Podsumowanie i wnioski
+## 6. Podsumowanie i wnioski
 
 Na podstawie przeprowadzonych eksperymentów wyciągnięto następujące wnioski:
 
