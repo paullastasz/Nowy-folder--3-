@@ -16,7 +16,7 @@ Celem projektu było stworzenie modelu generatywnego zdolnego do odtwarzania obi
 * **Dataset:** Zbiór domyślny (małe obiekty, parametry z zadania - z jedynie lekkim ograniczeniem na częstość występowania całościowo czarnych obrazków).
 * Model nie generował wystarczająco dobrych obrazów
 
-### Model 1: Wersja modelu 2 bez warstwy normalizującej 1D
+### Model 1: Wersja modelu 2 bez warstwy normalizującej 1D i na innym datasetcie
 * **Architektura i charakterystyka:** Jest on podobny do modelu 2, który używał dyskryminatora z mniejszą liczbę kanałów w warstwach konwolucyjnych 2D i liniowych oraz mniejszą ilością tych warstw w dyskryminatorze. Natomiast ten model za to nie zawiera w architekurze warstwy normalizującej na dane o 1 wymiarze.
 * **Dataset:** Zbiór według parametrów domyślnych kodu otrzymanego wraz z opisem projektu.
 * Checkpoint Model 1: checkpoints_v6/gen_epoch_400.pth  -> epoka 400
